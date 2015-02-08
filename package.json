@@ -8,13 +8,13 @@
         "url": "https://github.com/satrong/node-crawler.git"
     },
     "keywords": [
-        "node.js",
-        "sayimage"
+        "crawler",
+        "node.js"
     ],
     "author": "Satrong Cao",
     "license": "ISC",
     "bugs": {
-        "url": ""
+        "url": "https://github.com/satrong/node-crawler/issues"
     },
     "homepage": "",
     "devDependencies": {
