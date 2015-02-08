@@ -19,5 +19,7 @@ $ node index.js
 - **to**：同上。表示到第几页结束
 - **type**：爬取的类型：图片(`image`)和文本(`text`)
 - **saveDir**：保存的目录。如：`./download`
-- **selector**：选择器，写法类似于jQuery。
+- **selector**：数组，存储各个页面的选择器及URL所在的属性，按页面层级写。如：`[{$:'$("#test").find("a")',attr:'href'},{$:'$("#img li")',attr:'data-img'}]`
+	- **$**：字符串，写法类似于jQuery。如：`'$("#test").find("a")'`
+	- **attr**：url所在的属性（即`$`中查找的dom元素）
 - **headers**：头部信息。可选
