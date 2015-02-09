@@ -23,3 +23,4 @@ $ node index.js
 	- **$**：字符串，写法类似于jQuery。如：`'$("#test").find("a")'`
 	- **attr**：url所在的属性（即`$`中查找的dom元素）
 - **headers**：头部信息。可选
+- **imageFn**：自定义函数，对图片地址进行处理，如抓取到的图片地址是：`http://xxx.com/imgsmall/123.jpg`此地址是一张小图，而大图的地址是：`http://xxx.com/imgbig/123.jpg`，此时可以使用到`imageFn`函数：function(url){ return url.replace('imgsmall','imgbig'); }
