@@ -7,9 +7,9 @@ module.exports = {
     /// 是否是分页
     isPagination: true, 
     /// 开始页码
-    from: 9,
+    from: 1,
     /// 结束页码
-    to: 9,
+    to: 5,
     
     /// 抓取的类型 text:文本，images:图片
     type: 'image', 
