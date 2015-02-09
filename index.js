@@ -12,7 +12,9 @@ var URL = require('url');
 /// 配置文件
 var config = require('./config.js');
 var rooturl = config.isPagination ? function (i) { return config.url.replace('%%', i); }:config.url;
+
 var rootsite = config.url.match(/[^\.]+[^/]+/)[0];
+var hostname = URL.parse(rootsite).hostname;
 
 console.log(color('blueBG', 2), '抓取对象：', rootsite);
 
@@ -27,101 +29,111 @@ Crawler.prototype.crawl = function () {
     var urlLevels = []; /// 收集每个层级的url
     console.log('程序正在执行中...');
     
-    /// 通过config.selector的长度来确定页面的层级
-    async.eachSeries(config.selector, function (item, callback) {
-        var index = config.selector.indexOf(item);
-        /// 最后一层级
-        if (index === config.selector.length - 1) {
-            if (config.type) {
-                if (that[config.type]) {
-                    that[config.type](urlLevels[index - 1]);
-                } else {
-                    console.log(color('redBG'), '参数type值无效，参数值:text|image');
-                }
-            } else {
-                console.log(color('redBG'), '您没有配置参数type，参数值:text|image');
+    fs.exists('./cache/' + hostname + '.json', function (exists) {
+        if (exists) {
+            console.log(color('cyanBG'), '检测到有备份文件./cache/' + hostname + '.json，直接抓取备份文件里面的地址');
+            if (config.type === "image") {
+                that.dlImage(require('./cache/' + hostname + '.json'));
             }
-        } 
-        /// 第一层级
-        else if (index === 0) {
-            urlLevels[0] = [];
-            if (config.isPagination) {
-                var i = config.from;
-                async.whilst(function () {
-                    return i <= config.to;
-                }, function (_callback) {
-                    that.request(rooturl(i), function (status, $) {
-                        if (status) {
-                            var $$ = eval(item.$);
-                            $$.each(function () {
-                                var nextUrl = $(this).attr(item.attr);
-                                if (!/^http:\/\//i.test(nextUrl)) {
-                                    nextUrl = rootsite + nextUrl;
-                                }
-                                urlLevels[0].push(nextUrl);
-                            });
-                            console.log('第%d页分析完成', i);
+        } else {
+            /// 通过config.selector的长度来确定页面的层级
+            async.eachSeries(config.selector, function (item, callback) {
+                var index = config.selector.indexOf(item);
+                /// 最后一层级
+                if (index === config.selector.length - 1) {
+                    if (config.type) {
+                        if (that[config.type]) {
+                            that[config.type](urlLevels[index - 1]);
                         } else {
-                            console.log(color('red', 2), rooturl(i), '请求失败');
+                            console.log(color('redBG'), '参数type值无效，参数值:text|image');
                         }
-                        setTimeout(function () {
-                            ++i;
+                    } else {
+                        console.log(color('redBG'), '您没有配置参数type，参数值:text|image');
+                    }
+                } 
+                /// 第一层级
+                else if (index === 0) {
+                    urlLevels[0] = [];
+                    if (config.isPagination) {
+                        var i = config.from;
+                        async.whilst(function () {
+                            return i <= config.to;
+                        }, function (_callback) {
+                            that.request(rooturl(i), function (status, $) {
+                                if (status) {
+                                    var $$ = eval(item.$);
+                                    $$.each(function () {
+                                        var nextUrl = $(this).attr(item.attr);
+                                        if (!/^http:\/\//i.test(nextUrl)) {
+                                            nextUrl = rootsite + nextUrl;
+                                        }
+                                        urlLevels[0].push(nextUrl);
+                                    });
+                                    console.log('第%d页分析完成', i);
+                                } else {
+                                    console.log(color('red', 2), rooturl(i), '请求失败');
+                                }
+                                setTimeout(function () {
+                                    ++i;
+                                    _callback(null);
+                                }, parseInt(Math.random() * 2000));
+                            });
+                        }, function (err) {
+                            if (err) {
+                                console.log(color('red'), err);
+                            } else {
+                                var show_txt = '';
+                                if (config.type === 'image') {
+                                    show_txt = '套图片';
+                                } else if (config.type === 'text') {
+                                    show_txt = '篇文章';
+                                }
+                                console.log(color('green'), '分页处理完成，共收集到了' + urlLevels[0].length + show_txt);
+                            }
+                            callback(null);
+                        });
+                    } else {
+                        that.request(rooturl, function (status, $) {
+                            if (status) {
+                                eval(item.$).each(function () {
+                                    urlLevels[0].push($(this).attr(item.attr));
+                                });
+                            } else {
+                                console.log(color('red', 2), rooturl, '请求失败');
+                            }
+                            callback(null);
+                        });
+                    }
+                } 
+                /// 中间层级
+                else {
+                    urlLevels[index] = [];
+                    async.eachSeries(urlLevels[index - 1], function (_item, _callback) {
+                        that.request(_item, function (status, $) {
+                            if (status) {
+                                eval(_item.$).each(function () {
+                                    urlLevels[index].push($(this).attr(_item.attr));
+                                });
+                            } else {
+                                console.log(color('red', 2), _item, '请求失败');
+                            }
                             _callback(null);
-                        }, parseInt(Math.random() * 2000));
+                        });
+                    }, function () {
+                        callback(null);
                     });
-                }, function (err) {
-                    if (err) {
-                        console.log(color('red'), err);
-                    } else {
-                        var show_txt = '';
-                        if (config.type === 'image') {
-                            show_txt = '套图片';
-                        } else if (config.type === 'text') {
-                            show_txt = '篇文章';
-                        }
-                        
-                        console.log(color('green'), '分页处理完成，共收集到了' + urlLevels[0].length + show_txt);
-                    }
-                    callback(null);
-                });
-            } else {
-                that.request(rooturl, function (status, $) {
-                    if (status) {
-                        eval(item.$).each(function () {
-                            urlLevels[0].push($(this).attr(item.attr));
-                        });
-                    } else {
-                        console.log(color('red', 2), rooturl, '请求失败');
-                    }
-                    callback(null);
-                });
-            }
-        } 
-        /// 中间层级
-        else {
-            urlLevels[index] = [];
-            async.eachSeries(urlLevels[index - 1], function (_item, _callback) {
-                that.request(_item, function (status, $) {
-                    if (status) {
-                        eval(_item.$).each(function () {
-                            urlLevels[index].push($(this).attr(_item.attr));
-                        });
-                    } else {
-                        console.log(color('red', 2), _item, '请求失败');
-                    }
-                    _callback(null);
-                });
-            }, function () {
-                callback(null);
+                }
+            }, function (err) {
+                if (err) {
+                    console.log(color('red'), err);
+                } else {
+                    console.log(color('green'), '层级地址完成');
+                }
             });
         }
-    }, function (err) {
-        if (err) {
-            console.log(color('red'), err);
-        } else {
-            console.log(color('green'), '层级地址完成');
-        }
     });
+    
+    
 };
 
 /// 处理text
@@ -131,7 +143,6 @@ Crawler.prototype.text = function (urls) {
     var that = this;
     var i = 0;
     var count = urls.length;
-    var hostname = URL.parse(rootsite).hostname;
     mkdirp(config.saveDir + '/' + hostname, function (err) {
         if (err) {
             console.log(color('red'), '创建目录失败');
@@ -211,7 +222,18 @@ Crawler.prototype.image = function (urls) {
         });
     }, function (err) {
         if (err) console.log('imageError', err);
-        that.dlImage(list);
+        mkdirp('./cache', function (err) {
+            if (err) {
+                console.log(color('red'), '创建缓存目录cache失败');
+            } else {
+                fs.writeFile('./cache/' + hostname + '.json', JSON.stringify(list), function (err) {
+                    if (err) {
+                        console.log(color('red'), '备份地址失败');
+                    }
+                    that.dlImage(list);
+                });
+            }
+        });
     });
 };
 
@@ -230,9 +252,17 @@ Crawler.prototype.dlImage = function (list) {
             } else {
                 request.head(item.url, function (err, res, body) {
                     var url = config.imageFn ? config.imageFn(item.url) : item.url;
-                    request(url).pipe(fs.createWriteStream(path.join(filepath, filename)));
-                    console.log(color('green', 3), (list.indexOf(item) + 1) + '/' + count, path.join(filepath, filename), '保存成功');
-                    setTimeout(callback, parseInt(Math.random() * 2000));
+                    var savePath = path.join(filepath, filename);
+                    fs.exists(savePath, function (exists) {
+                        if (exists) {
+                            console.log(color('yellow', 2), savePath, '已存在');
+                            callback();
+                        } else {
+                            request(url).pipe(fs.createWriteStream(savePath));
+                            console.log(color('green', 3), (list.indexOf(item) + 1) + '/' + count, path.join(filepath, filename), '保存成功');
+                            setTimeout(callback, parseInt(Math.random() * 2000));
+                        }
+                    });                    
                 });
             }
         });
@@ -240,7 +270,9 @@ Crawler.prototype.dlImage = function (list) {
         if (err) {
             console.log(color("red"), err);
         } else {
-            console.log(color("green"), '执行完毕~');
+            fs.unlink('./cache/' + hostname + '.json', function () {
+                console.log(color("green"), '执行完毕~');
+            });
         }
     });
 };

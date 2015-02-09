@@ -7,9 +7,9 @@ module.exports = {
     /// 是否是分页
     isPagination: true, 
     /// 开始页码
-    from: 1,
+    from: 9,
     /// 结束页码
-    to: 2,
+    to: 9,
     
     /// 抓取的类型 text:文本，images:图片
     type: 'image', 
@@ -18,7 +18,7 @@ module.exports = {
     url: 'http://sexy.faceks.com/?page=%%',
     
     /// 保存的路径
-    saveDir: './download',
+    saveDir: 'E:/img',
     
     /// 选择器
     /// $:{String} 选择器，与jQuery的语法相似
