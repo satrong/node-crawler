@@ -9,10 +9,11 @@ $ npm install
 
 ## 使用
 ```shell
-$ node index.js
+$ node app.js
 ```
 
 ## 配置参数 
+- **mode**：显示的方式。`console`：cmd显示方式；`web`：通过在浏览器中访问页面显示`http://127.0.0.1:8000`
 - **url**：被爬的网址，如果为分页，则用`%%`替换页码，如：`http://www.xiaoboy.com/?page=%%`
 - **isPagination**：是否为分页，true或false
 - **from**：如果`isPagination`为true，则此参数生效。表示从第几页开始爬
