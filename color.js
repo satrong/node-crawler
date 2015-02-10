@@ -30,5 +30,10 @@ module.exports = function (color, n) {
     for (var i = 0; i < n; i++) { 
         s += '%s ';
     }
-    return styles[color].join(s.trim());
+    if (color) {
+        return styles[color].join(s.trim());
+    } else { 
+        return '%s';
+    }
+    
 }

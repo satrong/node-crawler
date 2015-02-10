@@ -1,6 +1,6 @@
 {
     "name": "nodejs-crawler",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Nodejs爬虫，可抓取图片和文本",
     "main": "index.js",
     "repository": {
@@ -9,14 +9,15 @@
     },
     "keywords": [
         "crawler",
-        "node.js"
+        "node.js",
+        "nodejs爬虫"
     ],
     "author": "Satrong Cao",
     "license": "ISC",
     "bugs": {
         "url": "https://github.com/satrong/node-crawler/issues"
     },
-    "homepage": "",
+    "homepage": "http://www.xiaoboy.com",
     "devDependencies": {
         "cheerio": "^0.18.0",
         "mkdirp": "^0.5.0",
@@ -24,6 +25,7 @@
     },
     "dependencies": {
         "async": "^0.9.0",
-        "iconv-lite": "^0.4.6"
+        "iconv-lite": "^0.4.6",
+        "ws": "^0.7.1"
     }
 }

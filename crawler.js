@@ -27,7 +27,7 @@ var Crawler = function () {
 Crawler.prototype.crawl = function () {
     var that = this;
     var urlLevels = []; /// 收集每个层级的url
-    console.log('程序正在执行中...');
+    that.log('程序正在执行中...');
     
     /// 通过config.selector的长度来确定页面的层级
     async.eachSeries(config.selector, function (item, callback) {
@@ -38,10 +38,10 @@ Crawler.prototype.crawl = function () {
                 if (that[config.type]) {
                     that[config.type](urlLevels[index - 1]);
                 } else {
-                    console.log(color('redBG'), '参数type值无效，参数值:text|image');
+                    that.log('参数type值无效，参数值:text|image', 'redBG');
                 }
             } else {
-                console.log(color('redBG'), '您没有配置参数type，参数值:text|image');
+                that.log('您没有配置参数type，参数值:text|image', 'redBG');
             }
         } 
                 /// 第一层级
@@ -62,9 +62,9 @@ Crawler.prototype.crawl = function () {
                                 }
                                 urlLevels[0].push(nextUrl);
                             });
-                            console.log('第%d页分析完成', i);
+                            that.log('第' + i + '页分析完成');
                         } else {
-                            console.log(color('red', 2), rooturl(i), '请求失败');
+                            that.log(rooturl(i) + '请求失败', 'red');
                         }
                         setTimeout(function () {
                             ++i;
@@ -73,7 +73,7 @@ Crawler.prototype.crawl = function () {
                     });
                 }, function (err) {
                     if (err) {
-                        console.log(color('red'), err);
+                        that.log(err, 'red');
                     } else {
                         var show_txt = '';
                         if (config.type === 'image') {
@@ -81,7 +81,7 @@ Crawler.prototype.crawl = function () {
                         } else if (config.type === 'text') {
                             show_txt = '篇文章';
                         }
-                        console.log(color('green'), '分页处理完成，共收集到了' + urlLevels[0].length + show_txt);
+                        that.log('分页处理完成，共收集到了' + urlLevels[0].length + show_txt, 'green');
                     }
                     callback(null);
                 });
@@ -92,7 +92,7 @@ Crawler.prototype.crawl = function () {
                             urlLevels[0].push($(this).attr(item.attr));
                         });
                     } else {
-                        console.log(color('red', 2), rooturl, '请求失败');
+                        that.log(rooturl + '请求失败', 'red');
                     }
                     callback(null);
                 });
@@ -108,7 +108,7 @@ Crawler.prototype.crawl = function () {
                             urlLevels[index].push($(this).attr(_item.attr));
                         });
                     } else {
-                        console.log(color('red', 2), _item, '请求失败');
+                        that.log(_item + '请求失败', 'red');
                     }
                     _callback(null);
                 });
@@ -118,9 +118,9 @@ Crawler.prototype.crawl = function () {
         }
     }, function (err) {
         if (err) {
-            console.log(color('red'), err);
+            that.log(err, 'red');
         } else {
-            console.log(color('green'), '层级地址完成');
+            that.log('层级地址完成', 'green');
         }
     });
     
@@ -130,13 +130,13 @@ Crawler.prototype.crawl = function () {
 /// 处理text
 /// urls:{Array}
 Crawler.prototype.text = function (urls) {
-    console.log('抓取文本中...');
+    that.log('抓取文本中...');
     var that = this;
     var i = 0;
     var count = urls.length;
     mkdirp(config.saveDir + '/' + hostname, function (err) {
         if (err) {
-            console.log(color('red'), '创建目录失败');
+            that.log('创建目录失败', 'red');
             process.exit(0);
         } else {
             async.whilst(function () {
@@ -152,12 +152,12 @@ Crawler.prototype.text = function (urls) {
                         fs.writeFile(filepath, content, { flag: 'wx' }, function (_err) {
                             if (_err) {
                                 if (_err.code === 'EEXIST') {
-                                    console.log(color('yellow'), '文件' + filepath + '已存在');
+                                    that.log('文件' + filepath + '已存在', 'yellow');
                                 } else {
-                                    console.log(color('red'), '保存文件' + filepath + '失败');
+                                    that.log('保存文件' + filepath + '失败', 'red');
                                 }
                             } else {
-                                console.log(color('green', 2), i + '/' + count , '文件' + filepath + '保存成功');
+                                that.log(i + '/' + count + ' 文件' + filepath + '保存成功', 'green');
                             }
                             setTimeout(callback, parseInt(Math.random() * 2000));
                         });
@@ -168,9 +168,9 @@ Crawler.prototype.text = function (urls) {
                 ++i;
             }, function (err) {
                 if (err) {
-                    console.log(color("red"), err);
+                    that.log(err, "red");
                 } else {
-                    console.log(color("green"), '执行完毕~');
+                    that.log('执行完毕~', "green");
                 }
             });
         }
@@ -180,8 +180,8 @@ Crawler.prototype.text = function (urls) {
 /// 处理image
 /// urls:{Array}
 Crawler.prototype.image = function (urls) {
-    console.log('抓取图片中...');
     var that = this;
+    that.log('抓取图片中...');
     var i = 0;
     var count = urls.length;
     async.whilst(function () {
@@ -202,7 +202,7 @@ Crawler.prototype.image = function (urls) {
                         });
                     });
                 }
-                console.log('第%s套图片收集了%d张图片', (i + 1) + '/' + count, $$.length);
+                that.log('第{0}套图片收集了{1}张图片'.format((i + 1) + '/' + count, $$.length));
                 that.dlImage(list, function () {
                     ++i;
                     callback();
@@ -210,11 +210,11 @@ Crawler.prototype.image = function (urls) {
             } else {
                 ++i;
                 callback();
-                console.log(color('red'), '页面' + uri + '请求失败');
+                that.log('页面' + uri + '请求失败', 'redBG');
             }
         });
     }, function (err) {
-        if (err) console.log('imageError', err);
+        if (err) that.log('imageError:' + err);
         process.exit(0);
     });
 };
@@ -223,7 +223,7 @@ Crawler.prototype.image = function (urls) {
 Crawler.prototype.dlImage = function (list, callback) {
     var that = this;
     var count = list.length;
-    console.log('准备下载到本地中...');
+    that.log('准备下载到本地中...');
     if (count < 1) {
         callback();
         return;
@@ -240,11 +240,11 @@ Crawler.prototype.dlImage = function (list, callback) {
                     var savePath = path.join(filepath, filename);
                     fs.exists(savePath, function (exists) {
                         if (exists) {
-                            console.log(color('yellow', 2), savePath, '已存在');
+                            that.log(savePath + '已存在', 'yellow');
                             callback();
                         } else {
                             request(url).pipe(fs.createWriteStream(savePath));
-                            console.log(color('green', 3), (list.indexOf(item) + 1) + '/' + count, path.join(filepath, filename), '保存成功');
+                            that.log((list.indexOf(item) + 1) + '/' + count + '  ：' + path.join(filepath, filename) + '保存成功', 'green');
                             setTimeout(callback, parseInt(Math.random() * 2000));
                         }
                     });
@@ -253,9 +253,9 @@ Crawler.prototype.dlImage = function (list, callback) {
         });
     }, function (err) {
         if (err) {
-            console.log(color("red"), err);
+            that.log(err, "red");
         } else {
-            console.log(color("greenBG"), list[0].title + ' ：下载完毕~');
+            that.log(list[0].title + ' ：下载完毕~', "greenBG");
         }
         callback();
     });
@@ -274,15 +274,15 @@ Crawler.prototype.request = function (url, callback) {
     
     config.headers && (opts.headers = config.headers);
     
-    console.log(color('grey'), '发送' + url + '，等待响应中...');
+    that.log('发送' + url + '，等待响应中...', 'grey');
     iconv.extendNodeEncodings(); /// 转码用
     request(opts, function (err, res, body) {
         var $ = null;
         if (!err && res.statusCode == 200) {
-            console.log(color('green'), res.statusCode);
+            that.log(res.statusCode, 'green');
             $ = cheerio.load(body);
         } else {
-            !err && console.log(color('red'), res.statusCode);
+            !err && that.log(res.statusCode, 'red');
         }
         iconv.undoExtendNodeEncodings();
         callback(!!$, $);
@@ -299,4 +299,29 @@ Crawler.prototype.title = function (str) {
     return title;
 };
 
+/// 输出信息
+Crawler.prototype.log = function (info, c) {
+    //console.log(info);
+    var that = this;
+    if (config.mode === 'web') {
+        process.send(JSON.stringify({ color: c, info: info })); /// 发送数据给主进程
+    } else if (config.mode === 'console') {
+        console.log(color(c), info);        
+    }
+};
+
+String.prototype.format = function () {
+    var formatted = this;
+    var length = arguments.length;
+    for (var i = 0; i < length; i++) {
+        var regexp = new RegExp('\\{' + i + '\\}', 'gi');
+        var value = arguments[i];
+        if (value === null || value === undefined)
+            value = '';
+        formatted = formatted.replace(regexp, value);
+    }
+    return formatted;
+};
+
 new Crawler().crawl();
+//module.exports = Crawler;

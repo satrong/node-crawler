@@ -3,17 +3,19 @@
  */
  
 /// 示例抓取：妹子图
-module.exports = {
+/*module.exports = {
+    mode: 'web',
+    
     /// 是否是分页
     isPagination: true, 
     /// 开始页码
-    from: 1,
+    from: 8,
     /// 结束页码
-    to: 5,
+    to: 9,
     
     /// 抓取的类型 text:文本，images:图片
     type: 'image', 
-
+    
     /// %% 表示页码
     url: 'http://sexy.faceks.com/?page=%%',
     
@@ -27,4 +29,24 @@ module.exports = {
         { $: '$("a.img")', attr: 'href' },
         { $: '$("a[bigimgsrc]")', attr: 'bigimgsrc' }
     ]
+};*/
+
+
+module.exports = {
+    mode: 'web', /// console:cmd窗口方式，web:网页形式
+    isPagination: true,
+    from: 1,
+    to: 1,
+    
+    type: 'image',
+    url: 'http://list.jd.com/list.html?cat=670%2C671%2C672&JL=6_0_0&page=%%',
+    charset: 'gbk',
+    saveDir: 'E:/jd',
+    selector: [
+        { $: '$(".p-img a")', attr: 'href' },
+        { $: '$("#spec-list").find("img[data-url]")', attr: 'src' }
+    ],
+    imageFn: function (url) {
+        return url.replace('/n5/', '/n0/')
+    }
 };
