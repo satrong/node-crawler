@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>test</title>
+    <script src="jquery-1.11.1.min.js"></script>
+    <style>
+        .yellow {
+            color: #cc8727;
+        }
+
+        .green {
+            color: #098d27;
+        }
+
+        .red {
+            color: #dd5303;
+        }
+
+        .grey {
+            color: #666;
+        }
+
+        .greenBG {
+            color: #fff;
+            background-color: #95B69D;
+        }
+
+        .redBG {
+            color: #fff;
+            background-color: #dd5303;
+        }
+
+        .blueBG {
+            color: #fff;
+            background-color: #02508b;
+        }
+
+        body {
+            font-size: 12px;font-family:Consolas;
+        }
+
+        body, ul, li {
+            margin: 0;
+            padding: 0;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        li {
+            padding: 5px 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        #info {
+            padding-bottom: 41px;
+        }
+
+        .btn {
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            border-top: 1px #ddd solid;
+            background-color: #eee;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <ul></ul>
+    </div>
+    <div class="btn"><button>开始抓取</button></div>
+    <script>
+        var ws = new WebSocket('ws://127.0.0.1:8001');
+        ws.onopen = function () {
+            console.log('connection');
+        };
+
+        ws.onmessage = function (e) {
+            var data = $.parseJSON(e.data);
+            $("#info").children('ul').prepend('<li class="' + data.color + '">' + data.info + '</li>');
+        };
+
+        $("button").on("click", function () {
+            var txt = $(this).text();
+            if (txt === '开始抓取') {
+                $(this).text('停止抓取');
+                ws.send('start');
+            } else {
+                $(this).text('开始抓取');
+                ws.send('stop');
+            }
+
+        });
+    </script>
+</body>
+</html>
