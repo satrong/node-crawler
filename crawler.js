@@ -130,8 +130,8 @@ Crawler.prototype.crawl = function () {
 /// 处理text
 /// urls:{Array}
 Crawler.prototype.text = function (urls) {
-    that.log('抓取文本中...');
     var that = this;
+    that.log('抓取文本中...');
     var i = 0;
     var count = urls.length;
     mkdirp(config.saveDir + '/' + hostname, function (err) {
